@@ -36,22 +36,9 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  5,
 			},
-			"owner": {
-				Type:     schema.TypeList,
+			"owner_id": {
+				Type:     schema.TypeString,
 				Optional: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 		},
 	}
@@ -88,14 +75,7 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if r.Owner.ID != "" {
-		o := []map[string]interface{}{
-			{
-				"id":   r.Owner.ID,
-				"name": r.Owner.Name,
-			},
-		}
-
-		if err := d.Set("owner", o); err != nil {
+		if err := d.Set("owner_id", r.Owner.ID); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -113,9 +93,8 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Labels:      labels,
 	}
 
-	if o, ok := d.GetOk("owner"); ok {
-		os := o.([]interface{})[0].(map[string]interface{})
-		r.Owner = &firehydrant.ServiceTeam{ID: os["id"].(string)}
+	if o, ok := d.GetOk("owner_id"); ok {
+		r.Owner = &firehydrant.ServiceTeam{ID: o.(string)}
 	}
 
 	newService, err := ac.Services().Create(ctx, r)
@@ -137,13 +116,7 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if newService.Owner.ID != "" {
-		o := []map[string]interface{}{
-			{
-				"id":   newService.Owner.ID,
-				"name": newService.Owner.Name,
-			},
-		}
-		if err := d.Set("owner", o); err != nil {
+		if err := d.Set("owner_id", newService.Owner.ID); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -161,9 +134,8 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 	}
 
-	if o, ok := d.GetOk("owner"); ok {
-		os := o.([]interface{})[0].(map[string]interface{})
-		r.Owner = &firehydrant.ServiceTeam{ID: os["id"].(string)}
+	if o, ok := d.GetOk("owner_id"); ok {
+		r.Owner = &firehydrant.ServiceTeam{ID: o.(string)}
 	}
 
 	_, err := ac.Services().Update(ctx, d.Id(), r)
