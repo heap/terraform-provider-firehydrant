@@ -2,11 +2,15 @@ steps:
   - name: ":firefighter: terraform-provider-firehydrant github release"
     commands:
       - apt update
-      - apt install -y curl
+      - apt install -y curl wget make
       - curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
       - echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
       - apt update
       - apt install -y gh
+      - wget https://go.dev/dl/go1.17.6.linux-amd64.tar.gz
+      - gunzip go1.17.6.linux-amd64.tar.gz
+      - tar xvf go1.17.6.linux-amd64.tar --directory /usr/local
+      - export PATH=$PATH:/usr/local/go/bin
       - make release
       - gh release create $BUILDKITE_TAG ./bin/*
     plugins:
