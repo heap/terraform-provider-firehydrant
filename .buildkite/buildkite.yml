@@ -12,7 +12,11 @@ steps:
       - tar xvf go1.17.6.linux-amd64.tar --directory /usr/local
       - export PATH=$PATH:/usr/local/go/bin
       - make release
+      - gh config set prompt disabled
+      - gh auth status
       - gh release create $BUILDKITE_TAG ./bin/*
     plugins:
       - heap/docker#v3.8.0:
           image: "ubuntu:20.04"
+          environment:
+            - GITHUB_TOKEN
