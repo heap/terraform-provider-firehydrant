@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# This file is run by Buildkite before running commands in each build step. This ensures
+# that there is a `VAULT_TOKEN` defined, which is required by any Terraform that uses
+# the `vault` provider, since it cannot use the Vault Agent on the build machines.
+
+set -euo pipefail
+echo 'Setting VAULT_TOKEN with a limited-TTL delegate and GITHUB_TOKEN'
+
+VAULT_TOKEN=$(VAULT_ADDR=http://127.0.0.1:8200 vault token create -explicit-max-ttl 15m -field token 2>/dev/null || echo "")
+export VAULT_TOKEN
+
+GITHUB_TOKEN=$(VAULT_ADDR=http://127.0.0.1:8200 vault read -field secret_key config/heap/github/firehydrant_github_token)
+export GITHUB_TOKEN
